@@ -27,7 +27,7 @@ class EvaluationPlots:
         if ax is None:
             ax = plt.gca()
 
-        sns.histplot(residuals, kde=True, bins=bins, alpha=0.7, ax=ax)
+        sns.histplot(residuals, kde=True, stat='density', bins=bins, alpha=0.7, ax=ax)
         ax.axvline(x=0, color='red', linestyle='--', linewidth=1)
 
         ax.set_xlabel('Residuals')
@@ -113,19 +113,29 @@ class EvaluationPlots:
         ax.set_title("Q-Q Plot of Residuals")
         ax.set_xlabel("Theoretical Quantiles")
         ax.set_ylabel("Sample Quantiles")
+
+        # lines = ax.get_lines()
+        # lines[0].set_color('black')
+        # lines[0].set_markersize(5)
+        # lines[0].set_alpha(1)
+
+        # lines[1].set_color('red')
+        # lines[1].set_linestyle('--')
+        # lines[1].set_linewidth(2)
+        
         ax.grid()
 
 
         ### This is not important to learn.
         ### It only serves to match the colors of other plots. Not important at all
         # Change scatter points color
-        for line in ax.get_lines():
-            # line[0] is usually points, line[1] is the 45-degree line
-            line.set_color('#1f77b4')
-            line.set_markersize(5)
-            line.set_alpha(1)
-        # Change line color (if needed)
-        # Usually the last line is the fit line:
-        ax.get_lines()[-1].set_color('red')
-        ax.get_lines()[-1].set_linestyle('--')
-        ax.get_lines()[-1].set_linewidth(2)
+
+        lines = ax.get_lines()
+        # scatter plots
+        lines[0].set_color('#1f77b4')
+        lines[0].set_markersize(5)
+        lines[0].set_alpha(1)
+        # regression line
+        lines[1].set_color('red')
+        lines[1].set_linestyle('--')
+        lines[1].set_linewidth(2)
