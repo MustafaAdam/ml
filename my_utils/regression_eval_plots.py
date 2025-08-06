@@ -11,6 +11,7 @@ class EvaluationPlots:
                 If residuals aren't centered around 0, it means your model has systematic bias
                 Meaning that the model is consistently over-predicting or under-predicting
                 This violates the assumption that E(residuals) = 0
+
             2. Linear regression assumes errors are normally distributed: ε ~ N(0, σ²)
                 If residuals ARE normal:
                     Your model is missing randomness only - the patterns you haven't captured are just noise
@@ -19,6 +20,7 @@ class EvaluationPlots:
                 If residuals are NOT normal:
                     Your model is missing systematic patterns - there are still discoverable relationships you haven't captured
                     The errors aren't just random noise - they have structure
+
             3. Possible residuals that are not good are:
                 a. Skewed residuals: Model systematically worse for high/low values
                 b. Heavy tails: Model occasionally makes huge mistakes (outliers)
@@ -35,15 +37,18 @@ class EvaluationPlots:
         ax.grid()
     
     @staticmethod
-    def plot_residuals_vs_predictions(predictions, residuals, ax=None):
+    def plot_residuals_vs_predictions(residuals, predictions, ax=None):
         '''
             A good residuals vs predictions plot should be a random scatter, with not discernible shape around y = 0 line
+
             The spread of residuals should be constant across all predicted values.
             If there's an expanding or contracting residuals shape as predictions values increase, this indicates non-constant variance.
             This violates the Homoscedasticity(constant variance) assumption of linear regression.
+
             Systematic patterns in the scatter plot (curve, smiles, frowns), indicates that there exists a nonlinear relationship between
                 the features and target. This violates the Linearity assumption(features should be have a linear relationship with the target)
                 This indicates that linear regression is not a good model for the dataset.
+            
             If the average residual is not close to zero, this indicates the existence of systematic bias in the predictions.
                 If most residuals are under zero, the model tends to under predict. If most residuals are above zero, the model tends to over predict.
 
@@ -64,9 +69,10 @@ class EvaluationPlots:
         ax.grid()
 
     @staticmethod
-    def plot_predictions_vs_true(true_values, predictions, ax=None):
+    def plot_predictions_vs_true(predictions, true_values,  ax=None):
         '''
             A good true values vs predictions plot should show a tight scatter around the diagonal line.
+
             This indicates that our predictions are very close to the true value (indicated by the diagonal line)
             The tighter the clustering of the scatters around the diagonal, the better our model is.
             Also, the higher R2 score, the tighter the clustering of the scatters around the diagonal is.
