@@ -1,5 +1,7 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
+from sklearn.preprocessing import label_binarize
 
 
 class ClassificationEvaluationPlots:
@@ -127,3 +129,132 @@ class ClassificationEvaluationPlots:
 
         ax.legend()
         ax.grid(alpha=0.3)
+
+
+
+    def plot_precision_recall_curve_multiclass(y_true, y_probs, classes, 
+                                            show_baseline=True, 
+                                            average="macro", 
+                                            show_only_average=False, 
+                                            ax=None):
+        """
+        Plot Precision-Recall curves for multiclass classification.
+
+        Parameters
+        ----------
+        y_true : array of shape (n_samples,)
+            True class labels.
+        y_probs : array of shape (n_samples, n_classes)
+            Predicted probabilities for each class.
+        classes : array-like
+            Class labels.
+        show_baseline : bool, default=True
+            Show no-skill baseline (positive class proportion).
+        average : {"micro", "macro"}, default="macro"
+            Averaging method for summary PR curve.
+        average_only : bool, default=False
+            If True, plot only the averaged curve (no per-class curves).
+        ax : matplotlib.axes.Axes, optional
+            Axes to plot on.
+        """
+        if ax is None:
+            ax = plt.gca()
+
+        y_bin = label_binarize(y_true, classes=classes)
+
+        if not show_only_average:
+            for i, class_label in enumerate(classes):
+                precision, recall, _ = precision_recall_curve(y_bin[:, i], y_probs[:, i])
+                ap = average_precision_score(y_bin[:, i], y_probs[:, i])
+                ax.plot(recall, precision, lw=1.5,
+                        label=f'Class {class_label} (AP={ap:.2f})')
+
+        if average == "micro":
+            precision, recall, _ = precision_recall_curve(y_bin.ravel(), y_probs.ravel())
+            ap = average_precision_score(y_bin, y_probs, average="micro")
+            ax.plot(recall, precision, color='navy', linestyle='--', lw=3,
+                    label=f'Micro-average (AP={ap:.2f})')
+        elif average == "macro":
+            ap = average_precision_score(y_bin, y_probs, average="macro")
+            precision, recall, _ = precision_recall_curve(y_bin.ravel(), y_probs.ravel())
+            ax.plot(recall, precision, color='darkorange', linestyle='--', lw=3,
+                    label=f'Macro-average (AP={ap:.2f})')
+
+        if show_baseline:
+            baseline = np.mean(y_true == classes[0])
+            ax.axhline(y=baseline, color='black', linestyle='--', alpha=0.7,
+                    label=f'Baseline (AP={baseline:.2f})')
+
+        ax.set_xlabel('Recall')
+        ax.set_ylabel('Precision')
+        ax.set_title('Precision-Recall Curve')
+        ax.set_xlim([0.0, 1.0])
+        ax.set_ylim([0.0, 1.05])
+        ax.legend(loc="lower left")
+        ax.grid(alpha=0.3)
+
+
+    def plot_roc_curve_multiclass(y_true, y_probs, classes, show_baseline=True, average="macro", show_only_average=False, ax=None):
+        """
+        Plot ROC curves for multiclass classification.
+
+        Parameters
+        ----------
+            y_true : array of shape (n_samples,)
+                True class labels.
+            y_probs : array of shape (n_samples, n_classes)
+                Predicted probabilities for each class.
+            classes : array-like
+                Class labels.
+            show_baseline : bool, default=True
+                Show no-skill baseline.
+            average : {"micro", "macro"}, default="macro"
+                Averaging method for summary ROC curve.
+            average_only : bool, default=False
+                If True, plot only the average curve (no per-class curves).
+            ax : matplotlib.axes.Axes, optional
+                Axes to plot on.
+        """
+        if ax is None:
+            ax = plt.gca()
+
+        y_bin = label_binarize(y_true, classes=classes)
+
+        if not show_only_average:
+            # Per-class curves
+            for i, class_label in enumerate(classes):
+                fpr, tpr, _ = roc_curve(y_bin[:, i], y_probs[:, i])
+                roc_auc = auc(fpr, tpr)
+                ax.plot(fpr, tpr, lw=1.5, label=f'Class {class_label} (AUC={roc_auc:.2f})')
+
+        # Average curve
+        if average == "micro":
+            fpr, tpr, _ = roc_curve(y_bin.ravel(), y_probs.ravel())
+            roc_auc = auc(fpr, tpr)
+            ax.plot(fpr, tpr, color='navy', linestyle='--', lw=3,
+                    label=f'Micro-average (AUC={roc_auc:.2f})')
+        elif average == "macro":
+            all_fpr = np.unique(np.concatenate(
+                [roc_curve(y_bin[:, i], y_probs[:, i])[0] for i in range(len(classes))]
+            ))
+            mean_tpr = np.zeros_like(all_fpr)
+            for i in range(len(classes)):
+                fpr, tpr, _ = roc_curve(y_bin[:, i], y_probs[:, i])
+                mean_tpr += np.interp(all_fpr, fpr, tpr)
+            mean_tpr /= len(classes)
+            roc_auc = auc(all_fpr, mean_tpr)
+            ax.plot(all_fpr, mean_tpr, color='darkorange', linestyle='--', lw=3,
+                    label=f'Macro-average (AUC={roc_auc:.2f})')
+
+        if show_baseline:
+            ax.plot([0, 1], [0, 1], color='black', linestyle='--', alpha=0.7,
+                    label='Baseline (AUC=0.5)')
+
+        ax.set_xlabel('False Positive Rate')
+        ax.set_ylabel('True Positive Rate')
+        ax.set_title('ROC Curve')
+        ax.set_xlim([0.0, 1.0])
+        ax.set_ylim([0.0, 1.05])
+        ax.legend(loc="lower right")
+        ax.grid(alpha=0.3)
+
