@@ -47,4 +47,6 @@ def plot_learning_curve(model, X, y, train_sizes=np.linspace(0.1, 1.0, 10), cv=3
     ax.set_xlabel('Training Set Size')
     ax.set_ylabel(f'{label}')
     ax.legend()
-    ax.grid()
+    ax.grid(alpha=0.6)
+
+    return training_scores_mean, validation_scores_mean
