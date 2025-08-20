@@ -68,6 +68,9 @@ class ClassificationEvaluationPlots:
 
         ax.legend()
         ax.grid(alpha=0.3)
+
+        return precisions, recalls
+
     
     @staticmethod
     def plot_roc_curve(true_values, prediction_probabilities, show_baseline=True, ax=None):
@@ -129,6 +132,8 @@ class ClassificationEvaluationPlots:
 
         ax.legend()
         ax.grid(alpha=0.3)
+
+        return false_positive_rate, true_positive_rate
 
 
 
